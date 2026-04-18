@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Вход — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1 class="auth-title">Вход в систему</h1>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <div class="form-group">
+                <label class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span class="field-error">{{ form.email.errors }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">{{ form.password.label }}</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <span class="field-error">{{ form.password.errors }}</span>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Войти</button>
+        </form>
+        <div class="auth-footer">
+            <p>Нет аккаунта? <a href="{% url 'register' %}" class="link-accent">Зарегистрироваться</a></p>
+            <p><a href="{% url 'catalog' %}" class="link-muted">Продолжить как гость</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

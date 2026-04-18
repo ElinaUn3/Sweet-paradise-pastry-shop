@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Сладкий рай{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="{% url 'catalog' %}" class="logo-link">
+                <img src="{% static 'images/logo.png' %}" alt="Сладкий рай" class="logo-img">
+                <span class="logo-text">Сладкий рай</span>
+            </a>
+            <nav class="main-nav">
+                <a href="{% url 'catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Каталог</a>
+                {% if user.is_authenticated %}
+                    {% if user.role != 'client' or user.role == 'client' %}
+                        <a href="{% url 'orders' %}" class="nav-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}">Заказы</a>
+                    {% endif %}
+                    {% if user.is_admin %}
+                        <a href="{% url 'users' %}" class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">Пользователи</a>
+                    {% endif %}
+                {% endif %}
+            </nav>
+            <div class="header-auth">
+                {% if user.is_authenticated %}
+                    <span class="user-name">{{ user.full_name }}</span>
+                    <span class="user-role-badge">
+                        {% if user.is_admin %}Администратор{% elif user.is_manager %}Менеджер{% else %}Клиент{% endif %}
+                    </span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline">Выйти</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline">Войти</a>
+                    <a href="{% url 'register' %}" class="btn btn-accent">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="site-main">
+        {% if messages %}
+            <div class="messages-wrap">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>&copy; 2026 Сладкий рай — кондитерская</p>
+        </div>
+    </footer>
+</body>
+</html>

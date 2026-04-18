@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'catalog' %}" class="link-muted">Каталог</a> / {{ product.name }}
+</div>
+
+<div class="product-detail">
+    <div class="product-detail-img-col">
+        {% if product.photo %}
+            <img src="{{ product.photo.url }}" alt="{{ product.name }}" class="product-detail-img">
+        {% else %}
+            <div class="product-img-placeholder large"></div>
+        {% endif %}
+        {% if product.discount %}
+            <div class="detail-discount-badge">Скидка {{ product.discount }}%</div>
+        {% endif %}
+    </div>
+    <div class="product-detail-info">
+        <span class="detail-category">{{ product.category }}</span>
+        <h1 class="detail-title">{{ product.name }}</h1>
+        <p class="detail-article">Артикул: {{ product.article }}</p>
+
+        <div class="detail-price-block">
+            {% if product.discount %}
+                <span class="price-old-lg">{{ product.price|floatformat:0 }} ₽</span>
+                <span class="price-new-lg">{{ product.discounted_price|floatformat:0 }} ₽</span>
+                <span class="discount-label">-{{ product.discount }}%</span>
+            {% else %}
+                <span class="price-current-lg">{{ product.price|floatformat:0 }} ₽</span>
+            {% endif %}
+        </div>
+
+        <table class="detail-table">
+            <tr><td class="detail-label">Кондитерская</td><td>{{ product.bakery }}</td></tr>
+            <tr><td class="detail-label">Тип</td><td>{{ product.cake_type }}</td></tr>
+            <tr><td class="detail-label">Единица</td><td>{{ product.unit }}</td></tr>
+            <tr><td class="detail-label">На складе</td>
+                <td class="{% if product.stock == 0 %}out-of-stock{% endif %}">
+                    {% if product.stock > 0 %}{{ product.stock }} шт.{% else %}Нет в наличии{% endif %}
+                </td>
+            </tr>
+        </table>
+
+        {% if product.description %}
+            <div class="detail-description">
+                <h3>Описание</h3>
+                <p>{{ product.description }}</p>
+            </div>
+        {% endif %}
+
+        <div class="detail-actions">
+            <a href="{% url 'catalog' %}" class="btn btn-outline">← Назад в каталог</a>
+            {% if user.is_authenticated and user.is_admin %}
+                <a href="{% url 'product_edit' product.pk %}" class="btn btn-primary">Редактировать</a>
+                <a href="{% url 'product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

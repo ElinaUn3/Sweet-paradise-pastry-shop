@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Каталог тортов — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Каталог тортов</h1>
+    {% if user.is_authenticated and user.is_admin %}
+        <a href="{% url 'product_create' %}" class="btn btn-accent">+ Добавить товар</a>
+    {% endif %}
+</div>
+
+{% if is_auth %}
+<div class="filters-panel">
+    <form method="get" class="filters-form">
+        <div class="filter-row">
+            <div class="filter-group search-group">
+                <input type="text" name="search" value="{{ search }}" placeholder="Поиск по названию и описанию..." class="form-control">
+            </div>
+            <div class="filter-group">
+                <select name="category" class="form-control">
+                    <option value="">Все категории</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == category %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="cake_type" class="form-control">
+                    <option value="">Все типы</option>
+                    {% for t in cake_types %}
+                        <option value="{{ t }}" {% if t == cake_type %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="bakery" class="form-control">
+                    <option value="">Все бренды</option>
+                    {% for b in bakeries %}
+                        <option value="{{ b }}" {% if b == bakery %}selected{% endif %}>{{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-group price-group">
+                <input type="number" name="price_min" value="{{ price_min }}" placeholder="Цена от" class="form-control" min="0">
+            </div>
+            <div class="filter-group price-group">
+                <input type="number" name="price_max" value="{{ price_max }}" placeholder="Цена до" class="form-control" min="0">
+            </div>
+            <div class="filter-group">
+                <select name="sort" class="form-control">
+                    <option value="">Сортировка</option>
+                    <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Цена ↑</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Цена ↓</option>
+                    <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Название А-Я</option>
+                    <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Название Я-А</option>
+                    <option value="discount_desc" {% if sort == 'discount_desc' %}selected{% endif %}>По скидке</option>
+                </select>
+            </div>
+            <div class="filter-group filter-actions">
+                <button type="submit" class="btn btn-primary">Применить</button>
+                <a href="{% url 'catalog' %}" class="btn btn-outline">Сбросить</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="guest-banner">
+    <p>Для доступа к поиску, фильтрам и сортировке — <a href="{% url 'login' %}" class="link-accent">войдите</a> или <a href="{% url 'register' %}" class="link-accent">зарегистрируйтесь</a></p>
+</div>
+{% endif %}
+
+<div class="products-list">
+    {% for product in products %}
+    <div class="product-row">
+        <a href="{% url 'product_detail' product.pk %}" class="product-row-link">
+            <div class="product-row-photo">
+                {% if product.photo %}
+                    <img src="{{ product.photo.url }}" alt="{{ product.name }}" class="product-row-img">
+                {% else %}
+                    <div class="product-row-img-placeholder"></div>
+                {% endif %}
+            </div>
+
+            <div class="product-row-info">
+                <p class="product-row-header">
+                    <span class="product-row-category">{{ product.category }}</span>
+                    <span class="product-row-sep">|</span>
+                    <span class="product-row-name">{{ product.name }}</span>
+                </p>
+                {% if product.description %}
+                    <p class="product-row-line"><span class="product-row-label">Описание товара:</span> {{ product.description }}</p>
+                {% endif %}
+                <p class="product-row-line"><span class="product-row-label">Производитель:</span> {{ product.bakery }}</p>
+                <p class="product-row-line"><span class="product-row-label">Тип:</span> {{ product.cake_type }}</p>
+                <p class="product-row-line">
+                    <span class="product-row-label">Цена:</span>
+                    {% if product.discount %}
+                        <span class="price-old-sm">{{ product.price|floatformat:0 }} ₽</span>
+                        <span class="price-new-sm">{{ product.discounted_price|floatformat:0 }} ₽</span>
+                    {% else %}
+                        <span class="price-sm">{{ product.price|floatformat:0 }} ₽</span>
+                    {% endif %}
+                </p>
+                <p class="product-row-line"><span class="product-row-label">Единица измерения:</span> {{ product.unit }}</p>
+                <p class="product-row-line">
+                    <span class="product-row-label">Количество на складе:</span>
+                    <span class="{% if product.stock == 0 %}out-of-stock{% endif %}">
+                        {% if product.stock > 0 %}{{ product.stock }} шт.{% else %}Нет в наличии{% endif %}
+                    </span>
+                </p>
+            </div>
+
+            <div class="product-row-discount">
+                {% if product.discount %}
+                    <span class="product-row-discount-value">Действующая<br>скидка</span>
+                    <span class="product-row-discount-num">{{ product.discount }}%</span>
+                {% else %}
+                    <span class="product-row-no-discount">Без<br>скидки</span>
+                {% endif %}
+            </div>
+        </a>
+
+        {% if user.is_authenticated and user.is_admin %}
+        <div class="product-row-actions">
+            <a href="{% url 'product_edit' product.pk %}" class="btn btn-sm btn-outline">Редактировать</a>
+            <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <p>Товары не найдены. Попробуйте изменить фильтры.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if products.has_other_pages %}
+<div class="pagination">
+    {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-btn">&laquo; Назад</a>
+    {% endif %}
+    <span class="page-info">Страница {{ products.number }} из {{ products.paginator.num_pages }}</span>
+    {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-btn">Вперёд &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

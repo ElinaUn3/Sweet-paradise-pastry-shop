@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Заказ №{{ order.number }} — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'orders' %}" class="link-muted">Заказы</a> / Заказ №{{ order.number }}
+</div>
+
+<div class="order-detail">
+    <div class="order-header">
+        <h1 class="page-title">Заказ №{{ order.number }}</h1>
+        <span class="status-badge status-{{ order.status|slugify }} status-large">{{ order.status }}</span>
+    </div>
+
+    <div class="order-meta-grid">
+        <div class="meta-card">
+            <h3>Информация о заказе</h3>
+            <table class="detail-table">
+                <tr><td class="detail-label">Клиент</td><td>{{ order.customer_name }}</td></tr>
+                <tr><td class="detail-label">Код получения</td><td><strong>{{ order.receipt_code }}</strong></td></tr>
+                <tr><td class="detail-label">Дата заказа</td><td>{{ order.order_date|date:"d.m.Y" }}</td></tr>
+                <tr><td class="detail-label">Дата доставки</td><td>{{ order.delivery_date|date:"d.m.Y" }}</td></tr>
+                <tr><td class="detail-label">Пункт выдачи</td><td>{{ order.delivery_point }}</td></tr>
+            </table>
+        </div>
+
+        {% if status_form %}
+        <div class="meta-card">
+            <h3>Изменить статус</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ status_form.status }}
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить статус</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="order-items-section">
+        <h3>Состав заказа</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Артикул</th>
+                    <th>Цена за ед.</th>
+                    <th>Скидка</th>
+                    <th>Кол-во</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td><a href="{% url 'product_detail' item.product.pk %}" class="link-accent">{{ item.product.name }}</a></td>
+                    <td>{{ item.product.article }}</td>
+                    <td>{{ item.product.price|floatformat:0 }} ₽</td>
+                    <td>{% if item.product.discount %}{{ item.product.discount }}%{% else %}—{% endif %}</td>
+                    <td>{{ item.quantity }} {{ item.product.unit }}</td>
+                    <td><strong>{{ item.subtotal|floatformat:0 }} ₽</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="total-label">Итого:</td>
+                    <td><strong>{{ order.total_price|floatformat:0 }} ₽</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="detail-actions">
+        <a href="{% url 'orders' %}" class="btn btn-outline">← Назад к заказам</a>
+        {% if user.is_admin %}
+            <a href="{% url 'order_edit' order.pk %}" class="btn btn-primary">Редактировать</a>
+            <a href="{% url 'order_delete' order.pk %}" class="btn btn-danger">Удалить</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

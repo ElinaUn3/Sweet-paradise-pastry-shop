@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'orders' %}" class="link-muted">Заказы</a> / {{ title }}
+</div>
+
+<div class="form-page">
+    <h1 class="page-title">{{ title }}</h1>
+    <form method="post" class="main-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-section">
+            <h3 class="section-title">Данные заказа</h3>
+            <div class="form-grid">
+                {% for field in form %}
+                    <div class="form-group">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<span class="field-error">{{ field.errors }}</span>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Состав заказа</h3>
+            {{ formset.management_form }}
+            <div id="formset-container">
+                {% for item_form in formset %}
+                    <div class="formset-row {% if item_form.DELETE.value %}hidden{% endif %}">
+                        <div class="form-group">
+                            <label class="form-label">Товар</label>
+                            {{ item_form.product }}
+                            {% if item_form.product.errors %}<span class="field-error">{{ item_form.product.errors }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Количество</label>
+                            {{ item_form.quantity }}
+                            {% if item_form.quantity.errors %}<span class="field-error">{{ item_form.quantity.errors }}</span>{% endif %}
+                        </div>
+                        {% if item_form.DELETE %}
+                            <div class="form-group delete-check">
+                                <label class="checkbox-label">{{ item_form.DELETE }} Удалить</label>
+                            </div>
+                        {% endif %}
+                        {{ item_form.id }}
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="add-item">+ Добавить позицию</button>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{% url 'orders' %}" class="btn btn-outline">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('add-item').addEventListener('click', function() {
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+    const formCount = parseInt(totalForms.value);
+    const newRow = container.querySelector('.formset-row').cloneNode(true);
+    newRow.innerHTML = newRow.innerHTML.replace(/-\d+-/g, '-' + formCount + '-');
+    newRow.querySelectorAll('input, select').forEach(el => { el.value = ''; });
+    container.appendChild(newRow);
+    totalForms.value = formCount + 1;
+});
+</script>
+{% endblock %}

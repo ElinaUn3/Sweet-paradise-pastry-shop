@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Подтверждение удаления — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-card confirm-card">
+        <h1 class="auth-title">{{ title }}</h1>
+        <p class="confirm-text">Это действие нельзя отменить. Вы уверены?</p>
+        <form method="post" class="confirm-form">
+            {% csrf_token %}
+            <div class="confirm-actions">
+                <button type="submit" class="btn btn-danger btn-full">Да, удалить</button>
+                <a href="{% url back_url %}" class="btn btn-outline btn-full">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

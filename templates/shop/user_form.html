@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Сладкий рай{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'users' %}" class="link-muted">Пользователи</a> / {{ title }}
+</div>
+
+<div class="form-page">
+    <h1 class="page-title">{{ title }}</h1>
+    <form method="post" class="main-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="form-group {% if field.field.widget.input_type == 'checkbox' %}checkbox-group{% endif %}">
+                    {% if field.field.widget.input_type != 'checkbox' %}
+                        <label class="form-label">{{ field.label }}</label>
+                    {% endif %}
+                    {{ field }}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                        <label class="checkbox-label">{{ field.label }}</label>
+                    {% endif %}
+                    {% if field.errors %}<span class="field-error">{{ field.errors }}</span>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{% url 'users' %}" class="btn btn-outline">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
